@@ -1,4 +1,5 @@
 import traceback
+import os
 import RPi.GPIO as gpio
 from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
@@ -112,7 +113,7 @@ def displayData():
 def main():
     global restart_permission
     restart_permission = 1
-    if (datetime.now().minute % 20) == 38:
+    if (datetime.now().minute % 20) == 0:
         restart_permission = 0
     else:
         pass
@@ -134,6 +135,7 @@ def main():
 
         gpio.setup(10, gpio.OUT)
         gpio.output(10, False)
+
         lcd.clear()
         print("\ndisplay ready.")
 
@@ -147,7 +149,8 @@ def main():
 
     lcd.clear()
     print("\nRunning webscraper...")
-    lcd.message("Running\nwebscraper...")
+    ip_address = os.popen('hostname -I').read()
+    lcd.message(str(ip_address))
 
     global data
     data = ws.main()
