@@ -1,5 +1,4 @@
 import traceback
-import os
 import RPi.GPIO as gpio
 from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
