@@ -1,7 +1,7 @@
 # rpi-forecast-display
 
 This is the code for a weather forecast display I made using a RaspberryPi 3b and a 16x2 LCD display (non-I^2^C).
-The goal of this project was to automate checking the weather forecast, especially in the mornings when many of us are particularly laze.
+The goal of this project was to automate checking the weather forecast, especially in the mornings when many of us are particularly lazy.
 ## Resources
 The data was webscraped from the [National Weather Service's](https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&unit=0&lg=english&FcstType=digital) website, specifically the Washington, D.C. forecast.
 I used [Selenium](https://www.selenium.dev/documentation/) as my webscraping tool.
