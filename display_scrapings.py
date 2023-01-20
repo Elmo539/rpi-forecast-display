@@ -84,7 +84,11 @@ def displayData():
             for i in range(len(title_list)):
                 try:
                     global restart_permission
-                    if ((datetime.now().minute % 20) == 0) and (restart_permission == 1):
+                    if (datetime.now().minute % 10) != 0):
+                        restart_permission = 1
+                    else:
+                        pass
+                    if ((datetime.now().minute % 10) == 0) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
@@ -113,7 +117,7 @@ def displayData():
 def main():
     global restart_permission
     restart_permission = 1
-    if (datetime.now().minute % 20) == 0:
+    if (datetime.now().minute % 10) == 0:
         restart_permission = 0
     else:
         pass
