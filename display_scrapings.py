@@ -7,25 +7,6 @@ from time import time
 from datetime import datetime
 
 
-"""
-def dark_button(parameter):
-    print('dark_button pressed with paramerter', parameter)
-    swap = {0:1, 1:0}
-
-    global lcd_light_flag
-    lcd_light_flag = swap[lcd_light_flag]
-
-    if lcd_light_flag == 0:
-        gpio.output(10, False)
-    elif lcd_light_flag == 1:
-        gpio.output(10, True)
-    else:
-        pass
-
-    return lcd_light_flag
-"""
-
-
 def formatData():
     print("\nPacket imported.")
     print("\nFormatting data...")
@@ -76,12 +57,6 @@ def formatData():
 def displayData():
     print("\nDisplaying...\n")
 
-    """
-    button_pin = 9
-    gpio.setup(button_pin, gpio.IN, pull_up_down=gpio.PUD_UP)
-    gpio.add_event_detect(button_pin, gpio.BOTH, callback=dark_button, bouncetime=400)
-    """
-
     try:
         restart_flag = 0
         while True:
@@ -97,7 +72,6 @@ def displayData():
                     else:
                         pass
                     if restart_flag == 1:
-                        #gpio.remove_event_detect(button_pin)
                         gpio.cleanup()
                         main()
                     else:
@@ -132,22 +106,9 @@ def main():
         global lcd
         lcd = LCD(rs=26, en=19, d4=13, d5=6, d6=5, d7=11, cols=16, lines=2)
 
-        global lcd_light_flag
-        lcd_light_flag = 0
-
-        global start_flag
-        start_flag = 1
-
-        global ip_display_flag
-        ip_display_flag = 0
-
-        #gpio.setup(10, gpio.OUT)
-        #gpio.output(10, False)
-
         lcd.clear()
         print("\ndisplay ready.")
 
-        print("\nstarting webscraper...")
         lcd.message("Starting\nwebscraper...")
     except Exception:
         traceback.print_exc()
