@@ -14,20 +14,22 @@ import pprint
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
 
 options = Options()
 options.add_argument('--no-sandbox')
-options.add_argument('--headless')
+#options.add_argument('--headless')
+options.add_experimental_option('detach', True)
+options.add_experimental_option("excludeSwitches", ["enable-logging"])
+options.add_argument('start-maximized')
 
 print("\nwebscraper ready")
 
 path = Service("/usr/lib/chromium-browser/chromedriver")
 driver = webdriver.Chrome(service=path, options=options)
 driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
-driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.CONTROL + 'r')
+
 
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
@@ -202,6 +204,9 @@ def getTodaysPrecip():
 
 def main():
     print("\nwebscraper running")
+
+    driver.refresh()
+
     export_packet = {}
 
     getHours()

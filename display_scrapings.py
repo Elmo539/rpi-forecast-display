@@ -1,7 +1,7 @@
 import traceback
 import os
-import RPi.GPIO as gpio
-from Adafruit_CharLCD import Adafruit_CharLCD as LCD
+#import RPi.GPIO as gpio
+#from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
 from time import time
 from datetime import datetime
@@ -88,49 +88,53 @@ def displayData():
             for i in range(len(title_list)):
                 try:
                     global restart_permission
-                    if (datetime.now().minute % 10) != 0:
+                    if (datetime.now().minute % 2) != 0:
                         restart_permission = 1
                     else:
                         pass
-                    if ((datetime.now().minute % 10) == 0) and (restart_permission == 1):
+                    if ((datetime.now().minute % 2) == 0) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
                     if restart_flag == 1:
                         #gpio.remove_event_detect(button_pin)
-                        gpio.cleanup()
+                        #gpio.cleanup()
                         main()
                     else:
                         pass
+                    '''
                     global lcd
                     lcd.clear()
                     lcd.message(title_list[i] + max_min_list[i])
+                    '''
                     print(title_list[i] + max_min_list[i])
                     sleep(4)
                 except KeyboardInterrupt:
-                    lcd.clear()
-                    gpio.cleanup()
+                    #lcd.clear()
+                    #gpio.cleanup()
                     return
 
     except KeyboardInterrupt:
-        lcd.clear()
-        gpio.cleanup()
+        #lcd.clear()
+        #gpio.cleanup()
         return
 
 
 def main():
     global restart_permission
     restart_permission = 1
-    if (datetime.now().minute % 10) == 0:
+    if (datetime.now().minute % 2) == 0:
         restart_permission = 0
     else:
         pass
     print("\nstarting display...")
 
     try:
+        '''
         gpio.setmode(gpio.BCM)
         global lcd
         lcd = LCD(rs=26, en=19, d4=13, d5=6, d6=5, d7=11, cols=16, lines=2)
+        '''
 
         global lcd_light_flag
         lcd_light_flag = 0
@@ -144,21 +148,23 @@ def main():
         #gpio.setup(10, gpio.OUT)
         #gpio.output(10, False)
 
-        lcd.clear()
+        #lcd.clear()
         print("\ndisplay ready.")
 
         print("\nstarting webscraper...")
-        lcd.message("Starting\nwebscraper...")
+        #lcd.message("Starting\nwebscraper...")
+
+        import webscraper_source as ws
+
     except Exception:
         traceback.print_exc()
-        gpio.cleanup()
+        #gpio.cleanup()
 
-    import webscraper_source as ws
 
-    lcd.clear()
+    #lcd.clear()
     print("\nRunning webscraper...")
     ip_address = os.popen('hostname -I').read()
-    lcd.message(str(ip_address))
+    #lcd.message(str(ip_address))
 
     global data
     data = ws.main()
