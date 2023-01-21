@@ -2,7 +2,7 @@
 TO DO NEXT:
     + add button display off functionality
     + clean up code
-    - upload to github
+    + upload to github
     + add 16-hour forecast option
     + add hourly refresh functionality
     - add manual click-through functionality
@@ -26,6 +26,7 @@ print("\nwebscraper ready")
 path = Service("/usr/lib/chromium-browser/chromedriver")
 driver = webdriver.Chrome(service=path, options=options)
 driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
+driver.refresh()
 
 
 def getHours():

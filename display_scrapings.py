@@ -158,6 +158,7 @@ def main():
 
     global data
     data = ws.main()
+
     formatData()
 
     displayData()
