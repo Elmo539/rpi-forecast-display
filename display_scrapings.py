@@ -63,11 +63,11 @@ def displayData():
             for i in range(len(title_list)):
                 try:
                     global restart_permission
-                    if (datetime.now().minute) != 5:
+                    if datetime.now().minute != 5:
                         restart_permission = 1
                     else:
                         pass
-                    if ((datetime.now().minute) == 5) and (restart_permission == 1):
+                    if (datetime.now().minute == 5) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
@@ -76,6 +76,7 @@ def displayData():
                         main()
                     else:
                         pass
+
                     global lcd
                     lcd.clear()
                     lcd.message(title_list[i] + max_min_list[i])
@@ -95,7 +96,7 @@ def displayData():
 def main():
     global restart_permission
     restart_permission = 1
-    if (datetime.now().minute) == 5:
+    if datetime.now().minute == 5:
         restart_permission = 0
     else:
         pass
@@ -110,6 +111,7 @@ def main():
         print("\ndisplay ready.")
 
         lcd.message("Starting\nwebscraper...")
+
     except Exception:
         traceback.print_exc()
         gpio.cleanup()
@@ -125,7 +127,6 @@ def main():
     data = ws.main()
 
     formatData()
-
     displayData()
 
 
