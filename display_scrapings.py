@@ -67,10 +67,12 @@ def displayData():
                         restart_permission = 1
                     else:
                         pass
+
                     if (datetime.now().minute == 5) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
+
                     if restart_flag == 1:
                         gpio.cleanup()
                         main()
@@ -82,6 +84,7 @@ def displayData():
                     lcd.message(title_list[i] + max_min_list[i])
                     print(title_list[i] + max_min_list[i])
                     sleep(4)
+
                 except KeyboardInterrupt:
                     lcd.clear()
                     gpio.cleanup()
