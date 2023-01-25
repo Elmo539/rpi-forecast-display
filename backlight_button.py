@@ -27,7 +27,7 @@ def main():
     lcd_light_flag = 0
 
     gpio.setup(10, gpio.OUT)
-    gpio.output(10, False)
+    gpio.output(10, True)
 
     button_pin = 9
     gpio.setup(button_pin, gpio.IN, pull_up_down=gpio.PUD_UP)
