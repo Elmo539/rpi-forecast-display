@@ -7,7 +7,6 @@ from time import time
 from datetime import datetime
 
 
-"""
 def dark_button(parameter):
     print('dark_button pressed with paramerter', parameter)
     swap = {0:1, 1:0}
@@ -23,7 +22,6 @@ def dark_button(parameter):
         pass
 
     return lcd_light_flag
-"""
 
 
 def formatData():
@@ -76,11 +74,9 @@ def formatData():
 def displayData():
     print("\nDisplaying...\n")
 
-    """
     button_pin = 9
     gpio.setup(button_pin, gpio.IN, pull_up_down=gpio.PUD_UP)
     gpio.add_event_detect(button_pin, gpio.BOTH, callback=dark_button, bouncetime=400)
-    """
 
     try:
         restart_flag = 0
@@ -102,11 +98,9 @@ def displayData():
                         main()
                     else:
                         pass
-                    '''
                     global lcd
                     lcd.clear()
                     lcd.message(title_list[i] + max_min_list[i])
-                    '''
                     print(title_list[i] + max_min_list[i])
                     sleep(4)
                 except KeyboardInterrupt:
@@ -130,11 +124,9 @@ def main():
     print("\nstarting display...")
 
     try:
-        '''
         gpio.setmode(gpio.BCM)
         global lcd
         lcd = LCD(rs=26, en=19, d4=13, d5=6, d6=5, d7=11, cols=16, lines=2)
-        '''
 
         global lcd_light_flag
         lcd_light_flag = 0
