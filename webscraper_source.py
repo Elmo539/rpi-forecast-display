@@ -4,6 +4,7 @@ TO DO NEXT:
     - fix bad url handling
 """
 
+import traceback
 import pprint
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -26,7 +27,6 @@ driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg
 
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
-    print(hour_row)
     global hours
     hours = []
     for hour in range(17):
@@ -203,12 +203,19 @@ def main():
 
     export_packet = {}
 
-    getHours()
-    getTemps()
-    getDewpoints()
-    getWinds()
-    getSkyCover()
-    getPrecip()
+    try:
+        getHours()
+        getTemps()
+        getDewpoints()
+        getWinds()
+        getSkyCover()
+        getPrecip()
+
+    except Exception:
+        exeption = traceback.print_exc()
+        print(exception)
+        export_packet['error'] = exception
+        return exception
 
     fin_hours = getTodaysHours()
     export_packet['hours'] = fin_hours

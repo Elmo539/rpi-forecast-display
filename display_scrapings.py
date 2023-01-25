@@ -129,8 +129,12 @@ def main():
     global data
     data = ws.main()
 
-    formatData()
-    displayData()
+
+    try:
+        print(data['error'])
+    except Exception:
+        formatData()
+        displayData()
 
 
 if __name__ == "__main__":
