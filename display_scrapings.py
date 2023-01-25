@@ -131,10 +131,18 @@ def main():
 
 
     try:
-        print(data['error'])
-    except Exception:
         formatData()
         displayData()
+    except Exception:
+        print(data['error'])
+        while True:
+            try:
+                lcd.clear()
+                lcd.message('WebscraperError')
+            except KeyboardInterrupt:
+                lcd.clear()
+                gpio.cleanup()
+                return
 
 
 if __name__ == "__main__":
