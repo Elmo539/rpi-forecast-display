@@ -1,13 +1,7 @@
 """
 TO DO NEXT:
-    + add button display off functionality
-    + clean up code
-    + upload to github
-    + add 16-hour forecast option
-    + add hourly refresh functionality
     - add manual click-through functionality
-    + test headless funcitonality
-    + research if I2C is possible
+    - fix bad url handling
 """
 
 import pprint
@@ -32,6 +26,7 @@ driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg
 
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
+    print(hour_row)
     global hours
     hours = []
     for hour in range(17):
