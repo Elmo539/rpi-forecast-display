@@ -1,7 +1,7 @@
 import traceback
 import os
-#import RPi.GPIO as gpio
-#from Adafruit_CharLCD import Adafruit_CharLCD as LCD
+import RPi.GPIO as gpio
+from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
 from time import time
 from datetime import datetime
@@ -86,13 +86,13 @@ def displayData():
                     sleep(4)
 
                 except KeyboardInterrupt:
-                    #lcd.clear()
-                    #gpio.cleanup()
+                    lcd.clear()
+                    gpio.cleanup()
                     return
 
     except KeyboardInterrupt:
-        #lcd.clear()
-        #gpio.cleanup()
+        lcd.clear()
+        gpio.cleanup()
         return
 
 
