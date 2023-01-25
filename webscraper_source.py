@@ -30,7 +30,6 @@ path = Service("/usr/lib/chromium-browser/chromedriver")
 driver = webdriver.Chrome(service=path, options=options)
 driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
 
-
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
     global hours
