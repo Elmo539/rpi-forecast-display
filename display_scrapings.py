@@ -119,6 +119,7 @@ def main():
         traceback.print_exc()
         gpio.cleanup()
 
+
     import webscraper_source as ws
 
     lcd.clear()
@@ -139,7 +140,9 @@ def main():
             try:
                 lcd.clear()
                 lcd.message('WebscraperError')
-            except KeyboardInterrupt:
+            except Exception:
+                with open('log.txt', 'w') as file:
+                    file.write(traceback.print_exc)
                 lcd.clear()
                 gpio.cleanup()
                 return
