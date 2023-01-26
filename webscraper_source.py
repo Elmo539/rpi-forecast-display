@@ -6,6 +6,7 @@ TO DO NEXT:
 
 import traceback
 import pprint
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -23,7 +24,13 @@ print("\nwebscraper ready")
 
 path = Service("/usr/lib/chromium-browser/chromedriver")
 driver = webdriver.Chrome(service=path, options=options)
-driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
+try:
+    driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
+except Exception:
+    with open('log.txt', 'a') as f:
+        f.write('\n' + str(datetime.now()) + '::\n')
+        f.write('Error in finding webscraper url\n')
+        f.write(traceback.format_exc())
 
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
@@ -212,10 +219,11 @@ def main():
         getPrecip()
 
     except Exception:
-        exeption = traceback.print_exc()
-        print(exception)
-        export_packet['error'] = exception
-        return exception
+        with open('log.txt', 'a') as f:
+            f.write('\n' + str(datetime.now()) + '::\n')
+            f.write('Error in webscraper_source.main()\n')
+            f.write(traceback.format_exc())
+        return
 
     fin_hours = getTodaysHours()
     export_packet['hours'] = fin_hours

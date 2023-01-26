@@ -10,6 +10,13 @@ from datetime import datetime
 def formatData():
     print("\nPacket imported.")
     print("\nFormatting data...")
+    if len(data['hours']['data']) != 16:
+        with open('log.txt', 'a') as f:
+            f.write('\n' + str(datetime.now()) + '::\n')
+            f.write('"Hours" list not the right size. Check website functionality.\n')
+    else:
+        pass
+
     global max_hours
     try:
         max_hours = data['hours']['data'][-1]
@@ -116,7 +123,10 @@ def main():
         lcd.message("Starting\nwebscraper...")
 
     except Exception:
-        traceback.print_exc()
+        with open('log.txt', 'a') as f:
+            f.write('\n' + str(datetime.now()) + '::\n')
+            f.write('Error in LCD setup\n')
+            f.write(traceback.format_exc())
         gpio.cleanup()
 
 
@@ -135,17 +145,13 @@ def main():
         formatData()
         displayData()
     except Exception:
-        print(data['error'])
-        while True:
-            try:
-                lcd.clear()
-                lcd.message('WebscraperError')
-            except Exception:
-                with open('log.txt', 'w') as file:
-                    file.write(traceback.print_exc)
-                lcd.clear()
-                gpio.cleanup()
-                return
+        with open('log.txt', 'a') as f:
+            f.write('\n' + str(datetime.now()) + '::\n')
+            f.write('Error in display process\n')
+            f.write(traceback.format_exc())
+            lcd.clear()
+            lcd.message('DataDisplayError')
+            gpio.cleanup()
 
 
 if __name__ == "__main__":
