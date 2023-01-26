@@ -174,7 +174,7 @@ def sessionLog():
     month = str(datetime.now().month)
     year = str(datetime.now().year)
     the_date = year + '-' + month + '-' + day
-    sec = str(datetime.now().second)
+    second = str(datetime.now().second)
     minute = str(datetime.now().minute)
     hour = str(datetime.now().hour)
     the_time = hour + ':' + minute + ':' + second
