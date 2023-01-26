@@ -156,19 +156,39 @@ def displayIP():
 # Function for handling errors. Logs the traceback into a 'log.txt'
 # file, displays the error on the LCD, and then cleans up the GPIO pins.
 def exceptionHandler(term_message, lcd_message):
-        with open('log.txt', 'a') as f:
-            f.write('\n' + str(datetime.now()) + '::\n')
-            f.write(term_message, '\n')
-            f.write(traceback.format_exc())
-        global lcd
-        lcd.clear()
-        lcd.message(lcd_message)
-        sleep(10)
-        lcd.clear()
-        gpio.cleanup()
+    global outfile
+    with open(outfile, 'a') as f:
+        f.write('\n' + str(datetime.now()) + '::\n')
+        f.write(term_message, '\n')
+        f.write(traceback.format_exc())
+    global lcd
+    lcd.clear()
+    lcd.message(lcd_message)
+    sleep(10)
+    lcd.clear()
+    gpio.cleanup()
+
+
+def sessionLog():
+    day = str(datetime.now().day)
+    month = str(datetime.now().month)
+    year = str(datetime.now().year)
+    the_date = year + '-' + month + '-' + day
+    sec = str(datetime.now().second)
+    minute = str(datetime.now().minute)
+    hour = str(datetime.now().hour)
+    the_time = hour + ':' + minute + ':' + second
+
+    global outfile
+    outfile = f'session_logs/{the_date}'
+    with open(outfile, 'a') as f:
+        f.write(f'\nSession started on {the_date} at {the_time}.')
 
 
 def main():
+
+    # Logging the start of the program.
+    sessionLog()
 
     # Setting the 'restart_permission' flag which will only
     # allow the program to restart once during the whole minute.

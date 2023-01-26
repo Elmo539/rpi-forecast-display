@@ -1,7 +1,8 @@
 """
 TO DO NEXT:
     - add manual click-through functionality
-    - fix bad url handling
+    \ fix bad url handling
+    - finish commenting
 """
 
 import traceback
