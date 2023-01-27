@@ -1,3 +1,4 @@
+import display_utils as du
 import traceback
 import os
 import RPi.GPIO as gpio
@@ -97,10 +98,7 @@ def displayData():
                     # Checks if restart_flag is set, if it is, 'main()' function restarts.
                     # GPIO pins are cleaned up first so that they can be set again.
                     if restart_flag == 1:
-
-                        with open(outfile, 'a') as f:
-                            restart_time = datetime.now().strftime("%H %M %S")
-                            f.write(f'\nSession restarted at {restart_time}.')
+                        #hourlyEndLog()
                         gpio.cleanup()
                         main()
                     else:
@@ -154,13 +152,14 @@ def displaySetup():
 # was originally developed on a college campus, so a
 # static IP was not possible. This may not be needed if
 # you are able to set a static IP for the RPi.
+"""
 def displayIP():
     global lcd
     lcd.clear()
     ip_address = os.popen('hostname -I').read()
     lcd.message(str(ip_address))
     print('\nDisplaying IP...')
-
+"""
 
 # Function for handling errors. Logs the traceback into a 'log.txt'
 # file, displays the error on the LCD, and then cleans up the GPIO pins.
@@ -176,27 +175,72 @@ def exceptionHandler(exc, term_message, lcd_message):
         lcd.message(lcd_message)
         sleep(10)
     else:
+        error_incident_flag += 1
         lcd.clear()
         gpio.cleanup()
 
 
-# Logs the beginning of the session.
-def sessionLog():
-    the_date = datetime.now().strftime("%Y %m %d")
-    the_time = datetime.now().strftime("%H %M %S")
+# Logs the beginning of the hourly session.
+def hourlyStartLog():
+    the_date = datetime.now().strftime("%Y-%m-%d")
+    the_time = datetime.now().strftime("%H:%M:%S")
 
     global outfile
-    outfile = f'session_logs/{the_date}__{the_time}'
+    outfile = f'session_logs/hourly_log_{the_date}__{the_time}'
     with open(outfile, 'a') as f:
         f.write(f'\nSession started on {the_date} at {the_time}.')
         ip_address = os.popen('hostname -I').read()
         f.write(f'\nSession IP: {ip_address}')
 
 
+def hourlyEndLog():
+    global outfile
+    global error_incident_flag
+    if error_incident_flag != 0:
+        new_outfile = outfile + '%' + str(error_incident_flag)
+        os.rename(outfile, new_outfile)
+        with open(outfile, 'a') as f:
+            restart_time = datetime.now().strftime("%H %M %S")
+            f.write(f'\nSession restarted at {restart_time} with {error_incident_flag} error(s).')
+    else:
+        with open(outfile, 'a') as f:
+            restart_time = datetime.now().strftime("%H %M %S")
+            f.write(f'\nSession restarted at {restart_time} with no errors.')
+
+
+# Cleans up all the logs from the day and creates a summary
+def dayEndLogCleanup():
+    the_day = int(datetime.now().strftime("%d"))
+    the_day = the_day - 1
+    the_date = datetime.now().strftime(f"%Y-%m-{the_day}")
+
+    error_logs = []
+
+    logs = os.scandir('session_logs')
+    with logs as logs:
+        for l in logs:
+            name = l.name
+            if (the_date in name) and ('hourly_log' in name) and ('%' not in name):
+                print(f'clean hourly log found: {name}')
+                #os.remove(f'sesson_logs/{name}')
+            else:
+                error_logs.append(name)
+
+    sorted(error_logs)
+    outfile = f'session_logs/daily_log_{the_date}'
+    with open(outfile, 'a') as f:
+        f.write(f'\nDay: {the_date}')
+        f.write(f'\nDay completed with {error_incident_flag} error(s).')
+        f.write('\nLog entered at {datetime.now.strftime("%Y-%m-%d: %H:%M:%S")}')
+
 def main():
 
     # Logging the start of the program.
-    sessionLog()
+    #hourlyStartLog()
+
+    # Create the error_incident_flag instance for the session
+    global error_incident_flag
+    error_incident_flag = 0
 
     # Setting the 'restart_permission' flag which will only
     # allow the program to restart once during the whole minute.
@@ -208,7 +252,8 @@ def main():
         pass
 
     # Calling the 'displaySetup()' function to initialize the LCD display.
-    displaySetup()
+    #displaySetup()
+    du.displayIP(lcd)
 
     # Running the webscraper
     global lcd
