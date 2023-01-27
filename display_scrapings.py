@@ -15,9 +15,9 @@ def formatData():
     # unexpected amount, indicating we didn't get the webpage
     # we were expecting. Also for logging purposes.
     if len(data['hours']['data']) != 16:
-        term = 'Length of "Hours" list was an unexpected value.\nCheck website functionality.'
-        lcd = 'WebscraperError'
-        exceptionHandler(term, lcd)
+        term_msg = 'Length of "Hours" list was an unexpected value.\nCheck website functionality.'
+        lcd_msg = 'WebscraperError'
+        exceptionHandler('No exception', term_msg, lcd_msg)
     else:
         pass
 
@@ -110,15 +110,19 @@ def displayData():
                     sleep(4)
 
                 # Cleans everything up in case of Ctrl-c.
-                except KeyboardInterrupt:
-                    lcd.clear()
-                    gpio.cleanup()
+                except KeyboardInterrupt as e:
+                    exception = str(e)
+                    term_msg = 'KeyboardInterrupt'
+                    lcd_msg = 'Keybrd Interrupt'
+                    exceptionHandler(exception, term_msg, lcd_msg)
                     return
 
     # Cleans everything up in case of Ctrl-c.
-    except KeyboardInterrupt:
-        lcd.clear()
-        gpio.cleanup()
+    except KeyboardInterrupt as e:
+        exception = str(e)
+        term_msg = 'KeyboardInterrupt'
+        lcd_msg = 'Keybrd Interrupt'
+        exceptionHandler(exception, term_msg, lcd_msg)
         return
 
 
@@ -134,10 +138,11 @@ def displaySetup():
         lcd.clear()
         print("\ndisplay ready.")
 
-    except Exception:
-        term = 'Error in LCD setup'
-        lcd = 'LcdSetupError'
-        exceptionHandler(term, lcd)
+    except Exception as e:
+        exception = str(e)
+        term_msg = 'Error in LCD setup'
+        lcd_msg = 'LcdSetupError'
+        exceptionHandler(exception, term_msg, lcd_msg)
 
 
 # Gets the IP address of the RPi and displays it on
@@ -155,32 +160,35 @@ def displayIP():
 
 # Function for handling errors. Logs the traceback into a 'log.txt'
 # file, displays the error on the LCD, and then cleans up the GPIO pins.
-def exceptionHandler(term_message, lcd_message):
+def exceptionHandler(exc, term_message, lcd_message):
     global outfile
     with open(outfile, 'a') as f:
-        f.write('\n' + str(datetime.now()) + '::\n')
-        f.write(term_message, '\n')
+        f.write('\n\n--- ' + str(datetime.now()) + ' ---\n')
+        f.write(term_message + '\n')
         f.write(traceback.format_exc())
     global lcd
-    lcd.clear()
-    lcd.message(lcd_message)
-    sleep(10)
-    lcd.clear()
-    gpio.cleanup()
+    if exc == 'KeyboardError':
+        lcd.clear()
+        lcd.message(lcd_message)
+        sleep(10)
+    else:
+        lcd.clear()
+        gpio.cleanup()
 
 
+# Logs the beginning of the session.
 def sessionLog():
-    day = str(datetime.now().day)
-    month = str(datetime.now().month)
-    year = str(datetime.now().year)
+    day = str(f'{datetime.now().day:02d}')
+    month = str(f'{datetime.now().month:02d}')
+    year = str(f'{datetime.now().year:04d}')
     the_date = year + '-' + month + '-' + day
-    second = str(datetime.now().second)
-    minute = str(datetime.now().minute)
-    hour = str(datetime.now().hour)
+    second = str(f'{datetime.now().second:02d}')
+    minute = str(f'{datetime.now().minute:02d}')
+    hour = str(f'{datetime.now().hour:02d}')
     the_time = hour + ':' + minute + ':' + second
 
     global outfile
-    outfile = f'session_logs/{the_date}'
+    outfile = f'session_logs/{the_date}__{the_time}'
     with open(outfile, 'a') as f:
         f.write(f'\nSession started on {the_date} at {the_time}.')
 
@@ -219,10 +227,11 @@ def main():
     try:
         formatData()
         displayData()
-    except Exception:
-        term = 'Error in "display_scrapings.main()" while trying to call "formatData()" and "displayData()".'
-        lcd = 'MainDisplayError'
-        exceptionHandler(term, lcd)
+    except Exception as e:
+        exception = str(e)
+        term_msg = 'Error in "display_scrapings.main()" while trying to call "formatData()" and "displayData()".'
+        lcd_msg = 'MainDisplayError'
+        exceptionHandler(excpetion, term_msg, lcd_msg)
 
 
 if __name__ == "__main__":
