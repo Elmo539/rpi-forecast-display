@@ -97,6 +97,10 @@ def displayData():
                     # Checks if restart_flag is set, if it is, 'main()' function restarts.
                     # GPIO pins are cleaned up first so that they can be set again.
                     if restart_flag == 1:
+
+                        with open(outfile, 'a') as f:
+                            restart_time = datetime.now().strftime("%H %M %S")
+                            f.write(f'\nSession restarted at {restart_time}.')
                         gpio.cleanup()
                         main()
                     else:
@@ -178,19 +182,15 @@ def exceptionHandler(exc, term_message, lcd_message):
 
 # Logs the beginning of the session.
 def sessionLog():
-    day = str(f'{datetime.now().day:02d}')
-    month = str(f'{datetime.now().month:02d}')
-    year = str(f'{datetime.now().year:04d}')
-    the_date = year + '-' + month + '-' + day
-    second = str(f'{datetime.now().second:02d}')
-    minute = str(f'{datetime.now().minute:02d}')
-    hour = str(f'{datetime.now().hour:02d}')
-    the_time = hour + ':' + minute + ':' + second
+    the_date = datetime.now().strftime("%Y %m %d")
+    the_time = datetime.now().strftime("%H %M %S")
 
     global outfile
     outfile = f'session_logs/{the_date}__{the_time}'
     with open(outfile, 'a') as f:
         f.write(f'\nSession started on {the_date} at {the_time}.')
+        ip_address = os.popen('hostname -I').read()
+        f.write(f'\nSession IP: {ip_address}')
 
 
 def main():
