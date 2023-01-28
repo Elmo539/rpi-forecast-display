@@ -45,7 +45,7 @@ def exceptionLog(outfile, is_error_flag, exception, term_msg):
             f.write(term_msg + '\n')
             f.write(traceback.format_exc())
     else:
-        with open(ourfile, 'a') as f:
+        with open(outfile, 'a') as f:
             f.write('\n\n--- RESTART ---\n')
 
     if error_incident_flag != 0:
