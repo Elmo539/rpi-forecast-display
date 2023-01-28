@@ -5,7 +5,7 @@ TO DO NEXT:
     - finish commenting
 """
 
-import traceback
+import display_utils as du
 import pprint
 from datetime import datetime
 from selenium import webdriver
@@ -14,6 +14,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
 
+print("\nwebscraper running")
 options = Options()
 options.add_argument('--no-sandbox')
 options.add_argument('--headless')
@@ -23,15 +24,7 @@ options.add_argument('start-maximized')
 
 print("\nwebscraper ready")
 
-path = Service("/usr/lib/chromium-browser/chromedriver")
-driver = webdriver.Chrome(service=path, options=options)
-try:
-    driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
-except Exception:
-    with open('log.txt', 'a') as f:
-        f.write('\n' + str(datetime.now()) + '::\n')
-        f.write('Error in finding webscraper url\n')
-        f.write(traceback.format_exc())
+
 
 def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
@@ -205,7 +198,14 @@ def getTodaysPrecip():
 
 
 def main():
-    print("\nwebscraper running")
+    path = Service("/usr/lib/chromium-browser/chromedriver")
+    global driver
+    driver = webdriver.Chrome(service=path, options=options)
+    try:
+        driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
+    except Exception as e:
+        term_msg = 'Error in finding webscraper url.'
+        du.exceptionHandler(str(e), term_msg)
 
     driver.refresh()
 
@@ -219,11 +219,9 @@ def main():
         getSkyCover()
         getPrecip()
 
-    except Exception:
-        with open('log.txt', 'a') as f:
-            f.write('\n' + str(datetime.now()) + '::\n')
-            f.write('Error in webscraper_source.main()\n')
-            f.write(traceback.format_exc())
+    except Exception as e:
+        term_msg = 'Error in webscraper_source.main()'
+        du.exceptionHandler(str(e), term_msg)
         return
 
     fin_hours = getTodaysHours()
@@ -249,6 +247,6 @@ def main():
     print("\nData loaded.\nExporting packet...")
     return export_packet
 
-if __name__ == "__main__":
-    main()
+
+main()
 

@@ -1,10 +1,7 @@
 import display_utils as du
-import traceback
-import os
 import RPi.GPIO as gpio
 from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
-from time import time
 from datetime import datetime
 
 
@@ -17,8 +14,7 @@ def formatData():
     # we were expecting. Also for logging purposes.
     if len(data['hours']['data']) != 16:
         term_msg = 'Length of "Hours" list was an unexpected value.\nCheck website functionality.'
-        lcd_msg = 'WebscraperError'
-        exceptionHandler('No exception', term_msg, lcd_msg)
+        du.exceptionHandler('No exception', term_msg)
     else:
         pass
 
@@ -82,7 +78,7 @@ def displayData():
                     # it has already restarted and the 'restart_permission' flag
                     # will be set to 0.
                     global restart_permission
-                    if datetime.now().minute != 5: # Restart timeframe is the entire 5th minute of every hour.
+                    if datetime.now().minute != 2: # Restart timeframe is the entire 5th minute of every hour.
                         restart_permission = 1
                     else:
                         pass
@@ -90,7 +86,7 @@ def displayData():
                     # Checks if we are in the restart timeframe and if the permission flag is set.
                     # If True, the restart_flag is set, signaling a restart.
                     # First clause of this if-statement may not be necessary, to be considered.
-                    if (datetime.now().minute == 5) and (restart_permission == 1):
+                    if (datetime.now().minute == 2) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
@@ -98,16 +94,19 @@ def displayData():
                     # Checks if restart_flag is set, if it is, 'main()' function restarts.
                     # GPIO pins are cleaned up first so that they can be set again.
                     if restart_flag == 1:
-                        #hourlyEndLog()
-                        gpio.cleanup()
+                        if (datetime.now().hour == 0):
+                            du.restartPrep()
+                            du.dayEndLogCleanup()
+                        else:
+                            du.restartPrep()
                         main()
                     else:
                         pass
 
                     # Displays the title and data on the LCD for 4 seconds.
                     global lcd
-                    lcd.clear()
-                    lcd.message(title_list[i] + max_min_list[i])
+                    du.lcd.clear()
+                    du.lcd.message(title_list[i] + max_min_list[i])
                     print(title_list[i] + max_min_list[i])
                     sleep(4)
 
@@ -115,159 +114,54 @@ def displayData():
                 except KeyboardInterrupt as e:
                     exception = str(e)
                     term_msg = 'KeyboardInterrupt'
-                    lcd_msg = 'Keybrd Interrupt'
-                    exceptionHandler(exception, term_msg, lcd_msg)
+                    du.exceptionHandler(exception, term_msg)
                     return
 
     # Cleans everything up in case of Ctrl-c.
     except KeyboardInterrupt as e:
         exception = str(e)
         term_msg = 'KeyboardInterrupt'
-        lcd_msg = 'Keybrd Interrupt'
-        exceptionHandler(exception, term_msg, lcd_msg)
+        du.exceptionHandler(exception, term_msg)
         return
 
-
-# Initializes the GPIO pins and the LCD display.
-def displaySetup():
-    print("\nstarting display...")
-
-    try:
-        gpio.setmode(gpio.BCM)
-        global lcd
-        lcd = LCD(rs=26, en=19, d4=13, d5=6, d6=5, d7=11, cols=16, lines=2)
-
-        lcd.clear()
-        print("\ndisplay ready.")
-
-    except Exception as e:
-        exception = str(e)
-        term_msg = 'Error in LCD setup'
-        lcd_msg = 'LcdSetupError'
-        exceptionHandler(exception, term_msg, lcd_msg)
-
-
-# Gets the IP address of the RPi and displays it on
-# the LCD for easier debugging with SSH. This project
-# was originally developed on a college campus, so a
-# static IP was not possible. This may not be needed if
-# you are able to set a static IP for the RPi.
-"""
-def displayIP():
-    global lcd
-    lcd.clear()
-    ip_address = os.popen('hostname -I').read()
-    lcd.message(str(ip_address))
-    print('\nDisplaying IP...')
-"""
-
-# Function for handling errors. Logs the traceback into a 'log.txt'
-# file, displays the error on the LCD, and then cleans up the GPIO pins.
-def exceptionHandler(exc, term_message, lcd_message):
-    global outfile
-    with open(outfile, 'a') as f:
-        f.write('\n\n--- ' + str(datetime.now()) + ' ---\n')
-        f.write(term_message + '\n')
-        f.write(traceback.format_exc())
-    global lcd
-    if exc == 'KeyboardError':
-        lcd.clear()
-        lcd.message(lcd_message)
-        sleep(10)
-    else:
-        error_incident_flag += 1
-        lcd.clear()
-        gpio.cleanup()
-
-
-# Logs the beginning of the hourly session.
-def hourlyStartLog():
-    the_date = datetime.now().strftime("%Y-%m-%d")
-    the_time = datetime.now().strftime("%H:%M:%S")
-
-    global outfile
-    outfile = f'session_logs/hourly_log_{the_date}__{the_time}'
-    with open(outfile, 'a') as f:
-        f.write(f'\nSession started on {the_date} at {the_time}.')
-        ip_address = os.popen('hostname -I').read()
-        f.write(f'\nSession IP: {ip_address}')
-
-
-def hourlyEndLog():
-    global outfile
-    global error_incident_flag
-    if error_incident_flag != 0:
-        new_outfile = outfile + '%' + str(error_incident_flag)
-        os.rename(outfile, new_outfile)
-        with open(outfile, 'a') as f:
-            restart_time = datetime.now().strftime("%H %M %S")
-            f.write(f'\nSession restarted at {restart_time} with {error_incident_flag} error(s).')
-    else:
-        with open(outfile, 'a') as f:
-            restart_time = datetime.now().strftime("%H %M %S")
-            f.write(f'\nSession restarted at {restart_time} with no errors.')
-
-
-# Cleans up all the logs from the day and creates a summary
-def dayEndLogCleanup():
-    the_day = int(datetime.now().strftime("%d"))
-    the_day = the_day - 1
-    the_date = datetime.now().strftime(f"%Y-%m-{the_day}")
-
-    error_logs = []
-
-    logs = os.scandir('session_logs')
-    with logs as logs:
-        for l in logs:
-            name = l.name
-            if (the_date in name) and ('hourly_log' in name) and ('%' not in name):
-                print(f'clean hourly log found: {name}')
-                #os.remove(f'sesson_logs/{name}')
-            else:
-                error_logs.append(name)
-
-    sorted(error_logs)
-    outfile = f'session_logs/daily_log_{the_date}'
-    with open(outfile, 'a') as f:
-        f.write(f'\nDay: {the_date}')
-        f.write(f'\nDay completed with {error_incident_flag} error(s).')
-        f.write('\nLog entered at {datetime.now.strftime("%Y-%m-%d: %H:%M:%S")}')
 
 def main():
 
     # Logging the start of the program.
-    #hourlyStartLog()
+    du.setup()
 
-    # Create the error_incident_flag instance for the session
-    global error_incident_flag
-    error_incident_flag = 0
 
     # Setting the 'restart_permission' flag which will only
     # allow the program to restart once during the whole minute.
     global restart_permission
     restart_permission = 1
-    if datetime.now().minute == 5:
+    if datetime.now().minute == 2:
         restart_permission = 0
     else:
         pass
 
+
     # Calling the 'displaySetup()' function to initialize the LCD display.
-    #displaySetup()
-    du.displayIP(lcd)
+    du.displaySetup()
+
 
     # Running the webscraper
-    global lcd
-    lcd.message("Starting\nwebscraper...")
+    du.lcd.message("Starting\nwebscraper...")
     print("\nStarting webscraper...")
+    global ws
     import webscraper_source as ws
+
 
     # Displaying the IP address on the LCD while the program is importing
     # the data. This is mainly for using SSH when debugging.
-    displayIP()
+    du.displayIP()
 
-    # Importing the data from the webscraper. This is not instantaneous.
+
+    # Importing the data from the webscraper. This process is not instantaneous.
     global data
     data = ws.main()
+
+
     # Running the format and display functions. 'displayData()' will run continuously.
     try:
         formatData()
@@ -275,8 +169,8 @@ def main():
     except Exception as e:
         exception = str(e)
         term_msg = 'Error in "display_scrapings.main()" while trying to call "formatData()" and "displayData()".'
-        lcd_msg = 'MainDisplayError'
-        exceptionHandler(excpetion, term_msg, lcd_msg)
+        du.exceptionHandler(exception, term_msg)
+
 
 
 if __name__ == "__main__":
