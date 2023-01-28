@@ -6,6 +6,7 @@ TO DO NEXT:
 """
 
 import display_utils as du
+import display_scrapings as ds
 import pprint
 from datetime import datetime
 from selenium import webdriver
@@ -30,8 +31,12 @@ def getHours():
     hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
     global hours
     hours = []
-    for hour in range(17):
-        hours.append(hour_row[hour].text)
+    try:
+        for hour in range(17):
+            hours.append(hour_row[hour].text)
+    except Exception as e:
+        term_msg = f'Error in webscraper_source.getHours():\n\tList "hours[]" contained value {hours}.'
+        du.exceptionHandler(1, str(e), term_msg)
 
 
 def getTemps():
@@ -205,7 +210,7 @@ def main():
         driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
     except Exception as e:
         term_msg = 'Error in finding webscraper url.'
-        du.exceptionHandler(str(e), term_msg)
+        du.exceptionHandler(1, str(e), term_msg)
 
     driver.refresh()
 
@@ -221,8 +226,7 @@ def main():
 
     except Exception as e:
         term_msg = 'Error in webscraper_source.main()'
-        du.exceptionHandler(str(e), term_msg)
-        return
+        du.exceptionHandler(1, str(e), term_msg)
 
     fin_hours = getTodaysHours()
     export_packet['hours'] = fin_hours

@@ -14,7 +14,7 @@ def formatData():
     # we were expecting. Also for logging purposes.
     if len(data['hours']['data']) != 16:
         term_msg = 'Length of "Hours" list was an unexpected value.\nCheck website functionality.'
-        du.exceptionHandler('No exception', term_msg)
+        du.exceptionHandler(1, 'No exception', term_msg)
     else:
         pass
 
@@ -95,11 +95,9 @@ def displayData():
                     # GPIO pins are cleaned up first so that they can be set again.
                     if restart_flag == 1:
                         if (datetime.now().hour == 0):
-                            du.restartPrep()
-                            du.dayEndLogCleanup()
+                            du.progRestart(1)
                         else:
-                            du.restartPrep()
-                        main()
+                            du.progRestart(0)
                     else:
                         pass
 
@@ -114,15 +112,13 @@ def displayData():
                 except KeyboardInterrupt as e:
                     exception = str(e)
                     term_msg = 'KeyboardInterrupt'
-                    du.exceptionHandler(exception, term_msg)
-                    return
+                    du.exceptionHandler(0, exception, term_msg)
 
     # Cleans everything up in case of Ctrl-c.
     except KeyboardInterrupt as e:
         exception = str(e)
         term_msg = 'KeyboardInterrupt'
-        du.exceptionHandler(exception, term_msg)
-        return
+        du.exceptionHandler(0, exception, term_msg)
 
 
 def main():
@@ -169,7 +165,7 @@ def main():
     except Exception as e:
         exception = str(e)
         term_msg = 'Error in "display_scrapings.main()" while trying to call "formatData()" and "displayData()".'
-        du.exceptionHandler(exception, term_msg)
+        du.exceptionHandler(0, exception, term_msg)
 
 
 

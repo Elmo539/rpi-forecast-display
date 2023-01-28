@@ -1,6 +1,8 @@
+import display_scrapings as ds
 import traceback
 import os
 from datetime import datetime
+from time import sleep
 import RPi.GPIO as gpio
 from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 
@@ -32,20 +34,63 @@ def displaySetup():
     except Exception as e:
         exception = str(e)
         term_msg = 'Error in LCD setup'
-        exceptionHandler(exception, term_msg)
+        exceptionHandler(1, exception, term_msg)
 
 
-def exceptionHandler(exc, term_message):
-    global outfile
-    with open(outfile, 'a') as f:
-        f.write('\n\n--- ' + str(datetime.now()) + ' ---\n')
-        f.write(term_message + '\n')
-        f.write(traceback.format_exc())
-    global lcd
+def exceptionLog(outfile, is_error_flag, exception, term_msg):
+    global error_incident_flag
+    if is_error_flag == 1:
+        with open(outfile, 'a') as f:
+            f.write('\n\n--- ' + str(datetime.now()) + ' ---\n')
+            f.write(term_msg + '\n')
+            f.write(traceback.format_exc())
+    else:
+        with open(ourfile, 'a') as f:
+            f.write('\n\n--- RESTART ---\n')
+
+    if error_incident_flag != 0:
+        new_outfile = outfile + '%' + str(error_incident_flag)
+        os.rename(outfile, new_outfile)
+        std_outfile = new_outfile
+        with open(std_outfile, 'a') as f:
+            restart_time = datetime.now().strftime("%H:%M:%S")
+            f.write(f'\nSession restarted at {restart_time} with {error_incident_flag} error(s).')
+    else:
+        std_outfile = outfile
+        with open(std_outfile, 'a') as f:
+            restart_time = datetime.now().strftime("%H:%M:%S")
+            f.write(f'\nSession restarted at {restart_time} with no errors.')
+
+    mem_available = str(os.popen("grep MemAvailable /proc/meminfo | awk '{ print ($2) }'").read()).removesuffix('\n')
+    if int(mem_available) < 200000:
+        with open(std_outfile, 'a') as f:
+            f.write('\nAvailable memory is less than 200,000 kB. System rebooting...')
+        os.popen('sudo reboot')
+    else:
+        with open(std_outfile, 'a') as f:
+            f.write(f'\nAvailable memory at end of session: {int(mem_available)} kB.')
+
+
+
+def exceptionHandler(restart, exc, term_message):
+    os.popen('sudo pkill chromium')
+
     global error_incident_flag
     error_incident_flag += 1
-    lcd.clear()
-    gpio.cleanup()
+
+    global outfile
+    exceptionLog(outfile, 1, exc, term_message)
+
+    if restart == 1:
+        print('restarting...')
+        sleep(10)
+        progRestart(0)
+    else:
+        print('shouldn\'t restart')
+        global lcd
+        lcd.clear()
+        gpio.cleanup()
+        quit()
 
 
 def displayIP():
@@ -56,23 +101,21 @@ def displayIP():
     print('\nDisplaying IP...')
 
 
-def restartPrep():
-    os.popen('pkill chromium')
+def progRestart(day_end_flag):
+    os.popen('sudo pkill chromium')
     global outfile
-    global error_incident_flag
-    if error_incident_flag != 0:
-        new_outfile = outfile + '%' + str(error_incident_flag)
-        os.rename(outfile, new_outfile)
-        with open(outfile, 'a') as f:
-            restart_time = datetime.now().strftime("%H %M %S")
-            f.write(f'\nSession restarted at {restart_time} with {error_incident_flag} error(s).')
+
+    exceptionLog(outfile, 0, "None", "None")
+
+    if day_end_flag == 1:
+        dayEndLogCleanup()
     else:
-        with open(outfile, 'a') as f:
-            restart_time = datetime.now().strftime("%H %M %S")
-            f.write(f'\nSession restarted at {restart_time} with no errors.')
-    global lcd
-    lcd.clear()
-    gpio.cleanup()
+        global lcd
+        lcd.clear()
+        gpio.cleanup()
+        pass
+
+    return ds.main()
 
 
 def dayEndLogCleanup():
