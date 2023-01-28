@@ -78,7 +78,7 @@ def displayData():
                     # it has already restarted and the 'restart_permission' flag
                     # will be set to 0.
                     global restart_permission
-                    if datetime.now().minute != 2: # Restart timeframe is the entire 5th minute of every hour.
+                    if (datetime.now().minute) != 2: # Restart timeframe is the entire 5th minute of every hour.
                         restart_permission = 1
                     else:
                         pass
@@ -86,7 +86,7 @@ def displayData():
                     # Checks if we are in the restart timeframe and if the permission flag is set.
                     # If True, the restart_flag is set, signaling a restart.
                     # First clause of this if-statement may not be necessary, to be considered.
-                    if (datetime.now().minute == 2) and (restart_permission == 1):
+                    if ((datetime.now().minute) == 2) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
@@ -131,7 +131,7 @@ def main():
     # allow the program to restart once during the whole minute.
     global restart_permission
     restart_permission = 1
-    if datetime.now().minute == 2:
+    if (datetime.now().minute) == 2:
         restart_permission = 0
     else:
         pass
