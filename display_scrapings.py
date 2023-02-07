@@ -105,11 +105,11 @@ def displayData():
                 if restart_flag == 1:
                     if (datetime.now().hour == 0):
                         outfile = du.setup.ext_outfile
-                        du.progRestart(1, outfile)
+                        du.progRestart(0, 1, outfile)
                         main()
                     else:
                         outfile = du.setup.ext_outfile
-                        du.progRestart(0, outfile)
+                        du.progRestart(0, 0, outfile)
                         main()
                 else:
                     pass
