@@ -7,12 +7,15 @@ TO DO NEXT:
 
 import display_utils as du
 import display_scrapings as ds
+import traceback
 import pprint
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 print("\nwebscraper running")
@@ -28,15 +31,18 @@ print("\nwebscraper ready")
 
 
 def getHours():
-    hour_row = driver.find_elements(By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")
-    global hours
-    hours = []
     try:
+        wait = WebDriverWait(driver, 10)
+        hour_row = wait.until(EC.presence_of_all_elements_located((By.XPATH, "/html/body/table[6]/tbody/tr[3]/td")))
+        global hours
+        hours = []
         for hour in range(17):
             hours.append(hour_row[hour].text)
     except Exception as e:
+        exception = traceback.format_exc()
+        print(f'Exception in webscraper_source.getHours():\nERROR: {exception}')
         term_msg = f'Error in webscraper_source.getHours():\n\tList "hours[]" contained value {hours}.'
-        du.exceptionHandler(1, str(e), term_msg)
+        du.exceptionHandler(1, exception, term_msg)
 
 
 def getTemps():
@@ -209,8 +215,10 @@ def main():
     try:
         driver.get('https://forecast.weather.gov/MapClick.php?lat=38.895&lon=-77.0373&lg=english&FcstType=digital')
     except Exception as e:
+        exception = traceback.format_exc()
+        print(f'Exception in finding webscraper url:\nERROR {exception}')
         term_msg = 'Error in finding webscraper url.'
-        du.exceptionHandler(1, str(e), term_msg)
+        du.exceptionHandler(1, exception, term_msg)
 
     driver.refresh()
 
@@ -225,8 +233,10 @@ def main():
         getPrecip()
 
     except Exception as e:
+        exception = traceback.format_exc()
+        print(f'Exception in webscraper_source.main():\nERROR: {exception}')
         term_msg = 'Error in webscraper_source.main()'
-        du.exceptionHandler(1, str(e), term_msg)
+        du.exceptionHandler(1, exception, term_msg)
 
     fin_hours = getTodaysHours()
     export_packet['hours'] = fin_hours

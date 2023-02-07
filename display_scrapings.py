@@ -1,4 +1,5 @@
 import display_utils as du
+import traceback
 import RPi.GPIO as gpio
 from Adafruit_CharLCD import Adafruit_CharLCD as LCD
 from time import sleep
@@ -13,49 +14,60 @@ def formatData():
     # unexpected amount, indicating we didn't get the webpage
     # we were expecting. Also for logging purposes.
     if len(data['hours']['data']) != 16:
+        print('Length of hours[] was not standard.')
         term_msg = 'Length of "Hours" list was an unexpected value.\nCheck website functionality.'
         du.exceptionHandler(1, 'No exception', term_msg)
+        main()
     else:
         pass
 
     # Gets the max and min values from each dataset.
     global max_hours
-    max_hours = data['hours']['data'][-1]
+    max_hours = "{0:0>2}".format(data['hours']['data'][-1])
     global min_hours
-    min_hours = data['hours']['data'][0]
+    min_hours = "{0:0>2}".format(data['hours']['data'][0])
     global max_temp
-    max_temp = data['temps']['max']
+    max_temp = "{0:0>2}".format(data['temps']['max'])
     global min_temp
-    min_temp = data['temps']['min']
+    min_temp = "{0:0>2}".format(data['temps']['min'])
     global max_dewpt
-    max_dewpt = data['dewpoints']['max']
+    max_dewpt = "{0:0>2}".format(data['dewpoints']['max'])
     global min_dewpt
-    min_dewpt = data['dewpoints']['min']
+    min_dewpt = "{0:0>2}".format(data['dewpoints']['min'])
     global max_wind
-    max_wind = data['winds']['max']
+    max_wind = "{0:0>2}".format(data['winds']['max'])
     global min_wind
-    min_wind = data['winds']['min']
+    min_wind = "{0:0>2}".format(data['winds']['min'])
     global max_skycover
-    max_skycover = data['skycover']['max']
+    max_skycover = "{0:0>2}".format(data['skycover']['max'])
     global min_skycover
-    min_skycover = data['skycover']['min']
+    min_skycover = "{0:0>2}".format(data['skycover']['min'])
     global max_precip
-    max_precip = data['precip']['max']
+    max_precip = "{0:0>2}".format(data['precip']['max'])
     global min_precip
-    min_precip = data['precip']['min']
+    min_precip = "{0:0>2}".format(data['precip']['min'])
 
     # Create the list of titles for the data.
     global title_list
     title_list = ['Hours(range)\n','Temperature(F)\n', 'Dewpoint(F)\n', 'Wind(mph)\n', 'Skycover(%)\n', 'Precipitation(%)\n']
     # Put all the max and min values into a list for iterating over.
-    global max_min_list
-    max_min_list = [
-        f'start:{min_hours}  end:{max_hours}\n',
-        f'max:{max_temp}    min:{min_temp}\n',
-        f'max:{max_dewpt}    min:{min_dewpt}\n',
-        f'max:{max_wind}    min:{min_wind}\n',
-        f'max:{max_skycover}    min:{min_skycover}\n',
-        f'max:{max_precip}    min:{min_precip}\n',
+    global l_reg_list
+    l_reg_list = [
+        f'{min_hours}',
+        f'{min_temp}',
+        f'{min_dewpt}',
+        f'{min_wind}',
+        f'{min_skycover}',
+        f'{min_precip}',
+    ]
+    global r_reg_list
+    r_reg_list = [
+        f'{max_hours}\n',
+        f'{max_temp}\n',
+        f'{max_dewpt}\n',
+        f'{max_wind}\n',
+        f'{max_skycover}\n',
+        f'{max_precip}\n',
     ]
 
 
@@ -64,64 +76,71 @@ def formatData():
 def displayData():
     print("\nDisplaying...\n")
 
-    try:
-        restart_flag = 0 # 'restart_flag' is disabled on startup.
-        while True:
-            for i in range(len(title_list)):
-                # This try - except block checks to see if it is
-                # time to restart the webscraper.
-                try:
-                    # Re-enables the 'restart_permission' flag after the
-                    # restart timeframe has passed. This is necessary because
-                    # the 'main()' function will check to see if we are in the
-                    # restart timeframe. If we are, the program will assume that
-                    # it has already restarted and the 'restart_permission' flag
-                    # will be set to 0.
-                    global restart_permission
+    restart_flag = 0 # 'restart_flag' is disabled on startup.
+    while True:
+        for i in range(len(title_list)):
+            try:
+                global restart_permission
+                if debug_mode_flag == 1:
+                    if (datetime.now().minute % 5) != 0: # Restart timeframe is the entire 5th minute of every hour.
+                        restart_permission = 1
+                    else:
+                        pass
+                    if ((datetime.now().minute % 5) == 0) and (restart_permission == 1):
+                        raise NameError
+                        restart_flag = 1
+                    else:
+                        pass
+
+                else:
                     if (datetime.now().minute) != 2: # Restart timeframe is the entire 5th minute of every hour.
                         restart_permission = 1
                     else:
                         pass
-
-                    # Checks if we are in the restart timeframe and if the permission flag is set.
-                    # If True, the restart_flag is set, signaling a restart.
-                    # First clause of this if-statement may not be necessary, to be considered.
                     if ((datetime.now().minute) == 2) and (restart_permission == 1):
                         restart_flag = 1
                     else:
                         pass
 
-                    # Checks if restart_flag is set, if it is, 'main()' function restarts.
-                    # GPIO pins are cleaned up first so that they can be set again.
-                    if restart_flag == 1:
-                        if (datetime.now().hour == 0):
-                            du.progRestart(1)
-                        else:
-                            du.progRestart(0)
+                if restart_flag == 1:
+                    if (datetime.now().hour == 0):
+                        outfile = du.setup.ext_outfile
+                        du.progRestart(1, outfile)
+                        main()
                     else:
-                        pass
+                        outfile = du.setup.ext_outfile
+                        du.progRestart(0, outfile)
+                        main()
+                else:
+                    pass
 
-                    # Displays the title and data on the LCD for 4 seconds.
+                try:
+                    line_1 = title_list[i]
+
+                    the_time = datetime.now().strftime("%H%M")
+                    line_2 = l_reg_list[i] + f'    {the_time}    ' + r_reg_list[i]
                     global lcd
                     du.lcd.clear()
-                    du.lcd.message(title_list[i] + max_min_list[i])
-                    print(title_list[i] + max_min_list[i])
+                    du.lcd.message(line_1 + line_2)
+                    print(line_1 + line_2)
                     sleep(4)
-
-                # Cleans everything up in case of Ctrl-c.
-                except KeyboardInterrupt as e:
-                    exception = str(e)
-                    term_msg = 'KeyboardInterrupt'
+                except (Exception, KeyboardInterrupt) as e:
+                    exception = traceback.format_exc()
+                    print(f'Exception in lcd function:\nERROR: {exception}')
+                    term_msg = 'Exception in lcd function.'
                     du.exceptionHandler(0, exception, term_msg)
 
-    # Cleans everything up in case of Ctrl-c.
-    except KeyboardInterrupt as e:
-        exception = str(e)
-        term_msg = 'KeyboardInterrupt'
-        du.exceptionHandler(0, exception, term_msg)
+            # Cleans everything up in case of Ctrl-c.
+            except (Exception, KeyboardInterrupt) as e:
+                exception = traceback.format_exc()
+                print(f'Exception in displayData():\nERROR: {exception}')
+                term_msg = 'Exception in displayData().'
+                du.exceptionHandler(0, exception, term_msg)
 
 
 def main():
+    global debug_mode_flag
+    debug_mode_flag = 0
 
     # Logging the start of the program.
     du.setup()
@@ -131,10 +150,16 @@ def main():
     # allow the program to restart once during the whole minute.
     global restart_permission
     restart_permission = 1
-    if (datetime.now().minute) == 2:
-        restart_permission = 0
+    if debug_mode_flag == 1:
+        if (datetime.now().minute % 5) == 0:
+            restart_permission = 0
+        else:
+            pass
     else:
-        pass
+        if (datetime.now().minute) == 2:
+            restart_permission = 0
+        else:
+            pass
 
 
     # Calling the 'displaySetup()' function to initialize the LCD display.
@@ -159,13 +184,8 @@ def main():
 
 
     # Running the format and display functions. 'displayData()' will run continuously.
-    try:
-        formatData()
-        displayData()
-    except Exception as e:
-        exception = str(e)
-        term_msg = 'Error in "display_scrapings.main()" while trying to call "formatData()" and "displayData()".'
-        du.exceptionHandler(0, exception, term_msg)
+    formatData()
+    displayData()
 
 
 
